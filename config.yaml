@@ -1,0 +1,31 @@
+goal: "تعلم أحدث طرق RAG والبحث الدلالي"
+language: "ar"
+
+# شدة وسرعة الدورة
+max_cycles: 999999999
+queries_per_cycle: 6
+results_per_query: 8
+
+freshness_days: 540
+min_chunk_len: 500
+max_chunk_len: 1800
+novelty_threshold: 0.9
+top_k_memory: 12
+
+# مسار قاعدة البيانات
+db_path: "autolearn/autolearn.db"
+
+# وضع مُعزَّز (اختياري) — فعّل مفاتيح OPENAI_API_KEY / GEMINI_API_KEY
+llm:
+  provider: "none"          # none | openai | gemini
+  model: "gpt-4o-mini"      # أو "gemini-1.5-flash" عند التفعيل
+  temperature: 0.2
+  max_tokens: 900
+
+safety:
+  blocked_domains:
+    - "x.com"
+    - "tiktok.com"
+    - "facebook.com"
+  respect_robots_txt: false
+  max_page_bytes: 2000000
