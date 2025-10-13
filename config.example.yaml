@@ -1,1 +1,27 @@
+goal: "تعلّم مفاهيم RAG الحديثة وأفضل ممارسات البحث الدلالي."
+language: "ar"
+max_cycles: 5
+queries_per_cycle: 3
+results_per_query: 5
+freshness_days: 365        # فضّل النتائج الأحدث من هذا الإطار
+min_chunk_len: 400
+max_chunk_len: 2000
+novelty_threshold: 0.82    # حد تشابه كوني لإسقاط المكرر (0..1، الأصغر = أكثر حساسية)
+top_k_memory: 8
+db_path: "autolearn.db"
 
+# وضع مُعزَّز بالـ LLM (اختياري)
+llm:
+  provider: "none"         # none | openai | gemini
+  model: "gpt-4o-mini"     # أو "gemini-1.5-flash"
+  temperature: 0.2
+  max_tokens: 800
+
+# سياسات أمان/تجنّب
+safety:
+  blocked_domains:
+    - "facebook.com"
+    - "tiktok.com"
+    - "x.com"
+  respect_robots_txt: false
+  max_page_bytes: 2000000
