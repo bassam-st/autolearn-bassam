@@ -1,32 +1,25 @@
-from duckduckgo_search import DDGS
-from dateutil import parser as dateparser
-from datetime import datetime, timedelta
+from pydantic import BaseModel, Field
 from typing import List, Optional
-from schemas import SearchHit
+from datetime import datetime
 
-def _parse_date(d) -> Optional[datetime]:
-    try:
-        return dateparser.parse(d)
-    except Exception:
-        return None
+class SearchHit(BaseModel):
+    title: str
+    url: str
+    snippet: Optional[str] = None
+    published: Optional[datetime] = None
+    source: Optional[str] = None
 
-class WebSearcher:
-    def __init__(self, days: int = 365, blocked_domains=None):
-        self.days = days
-        self.blocked = set(blocked_domains or [])
+class PageDoc(BaseModel):
+    url: str
+    title: str
+    text: str
+    published: Optional[datetime] = None
+    fetched_at: datetime
 
-    def search(self, query: str, max_results: int = 5) -> List[SearchHit]:
-        hits = []
-        with DDGS() as ddgs:
-            for r in ddgs.text(query, max_results=max_results, safesearch="moderate", region="wt-wt"):
-                url = r.get("href") or r.get("url")
-                if not url or any(b in url for b in self.blocked):
-                    continue
-                t = r.get("title", "")
-                snippet = r.get("body", "")
-                dt = _parse_date(r.get("date"))
-                hits.append(SearchHit(title=t, url=url, snippet=snippet, published=dt, source="ddg"))
-        # فضّل الأحدث
-        cutoff = datetime.utcnow() - timedelta(days=self.days)
-        hits.sort(key=lambda h: (h.published or cutoff, h.title), reverse=True)
-        return hits
+class Insight(BaseModel):
+    id: Optional[int] = None
+    topic: str
+    summary: str
+    confidence: float = 0.5
+    sources: List[str] = Field(default_factory=list)
+    created_at: datetime
