@@ -1,27 +1,40 @@
+# =======================
+# AutoLearn: الإعدادات الأساسية
+# =======================
+
+# هدف التعلّم (عدّل النص حسب مجالك)
 goal: "تعلم أحدث طرق RAG والبحث الدلالي"
+
+# لغة التلخيص والمخرجات
 language: "ar"
 
-# شدة وسرعة الدورة
-max_cycles: 999999999
-queries_per_cycle: 6
-results_per_query: 8
+# شِدّة وسرعة التعلّم
+max_cycles: 999999999       # رقم كبير للتشغيل المستمر (سيتجاهله لو شغّلت بـ forever=true)
+queries_per_cycle: 6        # عدد الاستعلامات في كل دورة
+results_per_query: 8        # عدد نتائج البحث لكل استعلام
 
+# تفضيل النتائج الحديثة + أطوال المقاطع
 freshness_days: 540
 min_chunk_len: 500
 max_chunk_len: 1800
-novelty_threshold: 0.9
+
+# منع التكرار (ارفعها إن لاحظت تكراراً كثيراً: 0.90–0.92)
+novelty_threshold: 0.90
+
+# أقرب مقاطع تتحقق ضدها الجِدّة / للإجابة السريعة من الذاكرة
 top_k_memory: 12
 
-# مسار قاعدة البيانات
-db_path: "autolearn/autolearn.db"
+# مسار قاعدة البيانات (خليه في الجذر بجانب الملفات)
+db_path: "autolearn.db"
 
-# وضع مُعزَّز (اختياري) — فعّل مفاتيح OPENAI_API_KEY / GEMINI_API_KEY
+# وضع مُعزَّز (اختياري) — فعّل مفاتيح OPENAI_API_KEY أو GEMINI_API_KEY لو حبيت
 llm:
   provider: "none"          # none | openai | gemini
   model: "gpt-4o-mini"      # أو "gemini-1.5-flash" عند التفعيل
   temperature: 0.2
   max_tokens: 900
 
+# سياسات أمان
 safety:
   blocked_domains:
     - "x.com"
