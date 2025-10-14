@@ -11,7 +11,7 @@ lxml==5.2.1
 feedparser==6.0.11
 
 # Text utils
-tiktoken==0.7.0
+# tiktoken==0.7.0   <-- تم تعليقها مؤقتًا
 nltk==3.8.1
 numpy==1.26.4
 scikit-learn==1.5.2
@@ -22,6 +22,6 @@ duckduckgo_search==6.2.6
 # Embeddings (CPU, جودة عالية)
 sentence-transformers==3.0.1
 
-# Optional LLMs (تحسّن الصياغة إن فعّلت المفاتيح)
+# Optional LLMs
 openai>=1.43.0
 google-generativeai>=0.7.2
