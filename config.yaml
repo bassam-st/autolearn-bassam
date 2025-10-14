@@ -42,3 +42,8 @@ safety:
     - "facebook.com"
   respect_robots_txt: false
   max_page_bytes: 2000000
+pace:
+  interval_minutes: 10   # أو 5 إن أردت أسرع
+  cycles_per_tick: 1
+queries_per_cycle: 6
+results_per_query: 8
