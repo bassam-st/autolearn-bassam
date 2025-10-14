@@ -1,18 +1,35 @@
 services:
+  # ===== لوحة الإحصائيات (ويب) =====
   - type: web
-    name: autolearn-bassam
+    name: autolearn-dashboard
     env: python
-    plan: starter            # يُفضّل Starter حتى لا تنام الخدمة
-    region: oregon
+    plan: starter
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
-    startCommand: bash run.sh
+    startCommand: uvicorn stats_web:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: AUTOLEARN_DB
         value: /data/autolearn.db
-      - key: NEWS_INTERVAL_SEC
-        value: 600                # 600 ثانية = 10 دقائق
+      - key: STATS_PORT
+        value: $PORT
+    disks:
+      - name: data
+        mountPath: /data
+        sizeGB: 2
+
+  # ===== العامل الدائم (يتعلّم تلقائياً) =====
+  - type: worker
+    name: autolearn-core
+    env: python
+    plan: starter
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: python autolearn.py
+    envVars:
+      - key: AUTOLEARN_DB
+        value: /data/autolearn.db
       - key: HF_HOME
         value: /data/hf_cache
       - key: SENTENCE_TRANSFORMERS_HOME
@@ -20,4 +37,4 @@ services:
     disks:
       - name: data
         mountPath: /data
-        sizeGB: 2
+        sizeGB: 4
