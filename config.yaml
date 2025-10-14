@@ -1,84 +1,9 @@
 language: "ar"
 db_path: "/data/autolearn.db"
 
-profiles:
-  news:
-    goal: >
-      جمع الأخبار العامة وما يتداوله الناس، تصنيفها وتلخيصها مع ذكر المصدر والتاريخ.
-    queries_per_cycle: 3
-    results_per_query: 6
-    freshness_days: 7
-    prefer_domains:
-      - "apnews.com"
-      - "reuters.com"
-      - "bbc.com"
-      - "theguardian.com"
-      - "arstechnica.com"
-      - "wired.com"
-      - "nature.com"
-      - "blog.google"
-      - "developer.apple.com"
-    seed_queries:
-      - "latest world news"
-      - "technology news updates"
-      - "ai research breakthroughs"
-      - "security vulnerabilities today"
-      - "economic indicators weekly"
-
-  engineering:
-    goal: >
-      تعلم كتابة الأكواد وبناء المشاريع (Python/JS), شبكات واتصالات، والهندسة.
-      أمثلة عملية: هيكلة مشروع، اختبارات، Docker، CI/CD، نشر، وأمن.
-    queries_per_cycle: 6
-    results_per_query: 8
-    freshness_days: 540
-    prefer_domains:
-      - "docs.python.org"
-      - "fastapi.tiangolo.com"
-      - "react.dev"
-      - "nextjs.org"
-      - "developer.mozilla.org"
-      - "kubernetes.io"
-      - "docker.com"
-      - "cisco.com"
-      - "arxiv.org"
-      - "ieee.org"
-      - "github.com"
-    seed_queries:
-      - "python project structure best practices 2024"
-      - "fastapi production template with tests docker"
-      - "react vite setup eslint prettier testing"
-      - "cisco networking basics for engineers"
-      - "5g architecture overview tutorial"
-      - "devops ci cd github actions python docker"
-      - "kubernetes best practices production 2024"
-
-  lifestyle:
-    goal: >
-      نصائح عامة محترمة في الجمال واللياقة ونمط الحياة، مع احترام الخصوصية
-      وذكر مصادر موثوقة. طلب صورة يكون برضا المستخدم فقط لاقتراح قصات/مكياج.
-
 pace:
-  interval_minutes: 10     # دورة تعلم كل 10 دقائق
+  interval_minutes: 10
   cycles_per_tick: 1
-
-min_chunk_len: 500
-max_chunk_len: 1800
-novelty_threshold: 0.9
-top_k_memory: 12
-
-llm:
-  provider: "none"         # none | openai | gemini (فعّل البيئة إن أردت)
-  model: "gpt-4o-mini"
-  temperature: 0.2
-  max_tokens: 900
-
-safety:
-  blocked_domains: ["x.com","tiktok.com","facebook.com"]
-  respect_robots_txt: true
-  max_page_bytes: 2000000
-  language: ar
-update_interval_min: 10   # غيّرها 10 إذا تبغى كل 10 دقائق
 
 learning_keywords:
   - الذكاء الاصطناعي
@@ -94,9 +19,9 @@ rss_feeds:
   - https://hnrss.org/frontpage
 
 arxiv_queries:
-  - cat:cs.AI
-  - cat:cs.LG
-  - cat:cs.CL
+  - cs.AI
+  - cs.LG
+  - cs.CL
 
 trusted_domains:
   - wikipedia.org
@@ -111,5 +36,15 @@ blocked_domains:
   - tiktok.com
   - facebook.com
 
-# مجلد محلي لملفاتك (PDF/TXT/MD) تُرفع يدوياً أو تُنشأ بالشل:
+llm:
+  provider: "none"
+  model: "gpt-4o-mini"
+  temperature: 0.2
+  max_tokens: 900
+
+safety:
+  respect_robots_txt: true
+  max_page_bytes: 2000000
+  language: ar
+
 personal_files_dir: /data/inbox
