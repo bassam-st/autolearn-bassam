@@ -2,7 +2,6 @@
 fastapi==0.115.0
 uvicorn==0.30.1
 pydantic==2.8.2
-jinja2==3.1.4
 
 # Fetching & parsing
 requests==2.32.3
@@ -12,7 +11,6 @@ lxml==5.2.1
 feedparser==6.0.11
 
 # Text utils
-tiktoken==0.7.0          # إذا فشل البناء على Render علّق هذا السطر
 nltk==3.8.1
 numpy==1.26.4
 scikit-learn==1.5.2
@@ -20,9 +18,9 @@ scikit-learn==1.5.2
 # Search
 duckduckgo_search==6.2.6
 
-# Embeddings (CPU)
+# Embeddings (CPU, جودة عالية)
 sentence-transformers==3.0.1
 
-# Optional LLMs (لتحسين الصياغة إن فعّلت مفاتيحك)
+# Optional LLMs (تحسّن الصياغة إن فعّلت المفاتيح)
 openai>=1.43.0
 google-generativeai>=0.7.2
