@@ -1,49 +1,79 @@
-# =======================
-# AutoLearn: الإعدادات الأساسية
-# =======================
-
-# هدف التعلّم (عدّل النص حسب مجالك)
-goal: "تعلم أحدث طرق RAG والبحث الدلالي"
-
-# لغة التلخيص والمخرجات
 language: "ar"
+db_path: "/data/autolearn.db"
 
-# شِدّة وسرعة التعلّم
-max_cycles: 999999999       # رقم كبير للتشغيل المستمر (سيتجاهله لو شغّلت بـ forever=true)
-queries_per_cycle: 6        # عدد الاستعلامات في كل دورة
-results_per_query: 8        # عدد نتائج البحث لكل استعلام
+profiles:
+  news:
+    goal: >
+      جمع الأخبار العامة وما يتداوله الناس، تصنيفها وتلخيصها مع ذكر المصدر والتاريخ.
+    queries_per_cycle: 3
+    results_per_query: 6
+    freshness_days: 7
+    prefer_domains:
+      - "apnews.com"
+      - "reuters.com"
+      - "bbc.com"
+      - "theguardian.com"
+      - "arstechnica.com"
+      - "wired.com"
+      - "nature.com"
+      - "blog.google"
+      - "developer.apple.com"
+    seed_queries:
+      - "latest world news"
+      - "technology news updates"
+      - "ai research breakthroughs"
+      - "security vulnerabilities today"
+      - "economic indicators weekly"
 
-# تفضيل النتائج الحديثة + أطوال المقاطع
-freshness_days: 540
+  engineering:
+    goal: >
+      تعلم كتابة الأكواد وبناء المشاريع (Python/JS), شبكات واتصالات، والهندسة.
+      أمثلة عملية: هيكلة مشروع، اختبارات، Docker، CI/CD، نشر، وأمن.
+    queries_per_cycle: 6
+    results_per_query: 8
+    freshness_days: 540
+    prefer_domains:
+      - "docs.python.org"
+      - "fastapi.tiangolo.com"
+      - "react.dev"
+      - "nextjs.org"
+      - "developer.mozilla.org"
+      - "kubernetes.io"
+      - "docker.com"
+      - "cisco.com"
+      - "arxiv.org"
+      - "ieee.org"
+      - "github.com"
+    seed_queries:
+      - "python project structure best practices 2024"
+      - "fastapi production template with tests docker"
+      - "react vite setup eslint prettier testing"
+      - "cisco networking basics for engineers"
+      - "5g architecture overview tutorial"
+      - "devops ci cd github actions python docker"
+      - "kubernetes best practices production 2024"
+
+  lifestyle:
+    goal: >
+      نصائح عامة محترمة في الجمال واللياقة ونمط الحياة، مع احترام الخصوصية
+      وذكر مصادر موثوقة. طلب صورة يكون برضا المستخدم فقط لاقتراح قصات/مكياج.
+
+pace:
+  interval_minutes: 10     # دورة تعلم كل 10 دقائق
+  cycles_per_tick: 1
+
 min_chunk_len: 500
 max_chunk_len: 1800
-
-# منع التكرار (ارفعها إن لاحظت تكراراً كثيراً: 0.90–0.92)
-novelty_threshold: 0.90
-
-# أقرب مقاطع تتحقق ضدها الجِدّة / للإجابة السريعة من الذاكرة
+novelty_threshold: 0.9
 top_k_memory: 12
 
-# مسار قاعدة البيانات (خليه في الجذر بجانب الملفات)
-db_path: "autolearn.db"
-
-# وضع مُعزَّز (اختياري) — فعّل مفاتيح OPENAI_API_KEY أو GEMINI_API_KEY لو حبيت
 llm:
-  provider: "none"          # none | openai | gemini
-  model: "gpt-4o-mini"      # أو "gemini-1.5-flash" عند التفعيل
+  provider: "none"         # none | openai | gemini (فعّل البيئة إن أردت)
+  model: "gpt-4o-mini"
   temperature: 0.2
   max_tokens: 900
 
-# سياسات أمان
 safety:
-  blocked_domains:
-    - "x.com"
-    - "tiktok.com"
-    - "facebook.com"
-  respect_robots_txt: false
+  blocked_domains: ["x.com","tiktok.com","facebook.com"]
+  respect_robots_txt: true
   max_page_bytes: 2000000
-pace:
-  interval_minutes: 10   # أو 5 إن أردت أسرع
-  cycles_per_tick: 1
-queries_per_cycle: 6
-results_per_query: 8
