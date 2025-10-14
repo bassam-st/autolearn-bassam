@@ -1,73 +1,22 @@
 services:
-  # لوحة المتابعة
   - type: web
-    name: autolearn-dashboard
+    name: autolearn-bassam
     env: python
-    plan: free
+    plan: starter            # يُفضّل Starter حتى لا تنام الخدمة
+    region: oregon
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
-    startCommand: uvicorn stats_web:app --host 0.0.0.0 --port $PORT
+    startCommand: bash run.sh
     envVars:
       - key: AUTOLEARN_DB
         value: /data/autolearn.db
-      - key: STATS_PORT
-        value: $PORT
-    disks:
-      - name: data
-        mountPath: /data
-        sizeGB: 2
-
-  # نواة الذكاء (API + التعلم الذاتي الخلفي)
-  - type: worker
-    name: autolearn-core
-    env: python
-    plan: starter
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: uvicorn autolearn:app --host 0.0.0.0 --port 10000
-    envVars:
-      - key: AUTOLEARN_DB
-        value: /data/autolearn.db
+      - key: NEWS_INTERVAL_SEC
+        value: 600                # 600 ثانية = 10 دقائق
       - key: HF_HOME
         value: /data/hf_cache
       - key: SENTENCE_TRANSFORMERS_HOME
         value: /data/st_cache
-      - key: LANGUAGE
-        value: ar
-      - key: LOG_LEVEL
-        value: info
-      - key: AUTONOMOUS_MODE
-        value: true
-      - key: UPDATE_INTERVAL
-        value: 5
-      # مفاتيح اختيارية
-      # - key: OPENAI_API_KEY
-      #   sync: false
-      # - key: GEMINI_API_KEY
-      #   sync: false
-    disks:
-      - name: data
-        mountPath: /data
-        sizeGB: 2
-
-  # عامل الأخبار/المعرفة
-  - type: worker
-    name: autolearn-news
-    env: python
-    plan: starter
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: python news_worker.py
-    envVars:
-      - key: AUTOLEARN_DB
-        value: /data/autolearn.db
-      - key: LANGUAGE
-        value: ar
-      - key: UPDATE_INTERVAL
-        value: 60
     disks:
       - name: data
         mountPath: /data
