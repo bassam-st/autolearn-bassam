@@ -1,0 +1,16 @@
+name: AutoLearn Cron
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # كل 10 دقائق
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Render trigger endpoint
+        env:
+          TRIGGER_URL: ${{ secrets.TRIGGER_URL }}
+          TRIGGER_TOKEN: ${{ secrets.TRIGGER_TOKEN }}
+        run: |
+          curl -fsS "$TRIGGER_URL?token=$TRIGGER_TOKEN"
