@@ -1,0 +1,54 @@
+services:
+  - type: web
+    name: autolearn-dashboard
+    env: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: uvicorn stats_web:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: AUTOLEARN_DB
+        value: /data/autolearn.db
+      - key: STATS_PORT
+        value: $PORT
+    disks:
+      - name: data
+        mountPath: /data
+        sizeGB: 2
+
+  - type: worker
+    name: autolearn-core
+    env: python
+    plan: starter   # ليعمل 24/7؛ يمكن تغييرها إلى free مؤقتًا
+    buildCommand: pip install -r requirements.txt
+    startCommand: python autolearn.py
+    envVars:
+      - key: AUTOLEARN_DB
+        value: /data/autolearn.db
+      - key: HF_HOME
+        value: /data/hf_cache
+      - key: SENTENCE_TRANSFORMERS_HOME
+        value: /data/st_cache
+      # - key: OPENAI_API_KEY
+      #   sync: false
+      # - key: GEMINI_API_KEY
+      #   sync: false
+    disks:
+      - name: data
+        mountPath: /data
+        sizeGB: 2
+
+  - type: worker
+    name: autolearn-news
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python news_worker.py
+    envVars:
+      - key: AUTOLEARN_DB
+        value: /data/autolearn.db
+    disks:
+      - name: data
+        mountPath: /data
+        sizeGB: 2
