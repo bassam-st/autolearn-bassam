@@ -8,6 +8,7 @@ requests==2.32.3
 beautifulsoup4==4.12.3
 readability-lxml==0.8.1
 lxml==5.2.1
+lxml-html-clean==0.1.1
 feedparser==6.0.11
 
 # Text utils
@@ -18,12 +19,9 @@ scikit-learn==1.5.2
 # Search
 duckduckgo_search==6.2.6
 
-# Embeddings (CPU, جودة عالية)
+# Embeddings (CPU فقط)
 sentence-transformers==3.0.1
 
-# Optional LLMs (تحسّن الصياغة إن فعّلت المفاتيح)
+# اختياري (لو فعّلت مفاتيحها)
 openai>=1.43.0
 google-generativeai>=0.7.2
-wikipedia-api==0.6.0
-arxiv==2.1.3
-lxml-html-clean==0.1.1
