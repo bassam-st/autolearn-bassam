@@ -1,55 +1,82 @@
-import os, yaml, sys
-from pathlib import Path
-from tqdm import tqdm
-from datetime import datetime
+# -*- coding: utf-8 -*-
+import os, time, hashlib, threading, datetime as dt
+from typing import List, Optional
+from fastapi import FastAPI, Query
+from pydantic import BaseModel
+
+from memory import Memory
+from searcher import web_search
+from fetcher import fetch_and_clean
 from learner import Learner
 
-def load_cfg(path: str):
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+LANG = os.getenv("LANGUAGE", "ar")
+UPDATE_INTERVAL = int(os.getenv("UPDATE_INTERVAL", "5"))  # دقائق
+AUTONOMOUS = os.getenv("AUTONOMOUS_MODE", "true").lower() == "true"
 
-def main():
-    cfg_path = sys.argv[1] if len(sys.argv) > 1 else "config.example.yaml"
-    cfg = load_cfg(cfg_path)
-    learner = Learner(cfg)
+app = FastAPI(title="AutoLearn Core", version="1.0")
 
-    goal = cfg.get("goal", "تعلم موضوع جديد")
-    max_cycles = int(cfg.get("max_cycles", 3))
-    queries_per_cycle = int(cfg.get("queries_per_cycle", 3))
-    results_per_query = int(cfg.get("results_per_query", 5))
+mem = Memory(os.getenv("AUTOLEARN_DB", "autolearn.db"))
+learner = Learner(mem)
 
-    notes = []
-    print(f"== AutoLearn: {goal} ==")
-    for c in range(1, max_cycles + 1):
-        print(f"\n--- الدورة {c}/{max_cycles} ---")
-        qs = learner.plan_queries(goal, notes)
-        qs = qs[:queries_per_cycle]
-        all_hits = []
-        for q in qs:
-            print(f"[بحث] {q}")
-            hits = learner.searcher.search(q, max_results=results_per_query)
-            all_hits.extend(hits)
+DEFAULT_TOPICS = os.getenv(
+    "LEARNING_PRIORITIES",
+    "technology,education,network,telecom,software,energy,science,ai,robotics"
+).split(",")
 
-        kept = learner.fetch_novel_docs(all_hits)
-        print(f"[ذاكرة] مقاطع جديدة مُضافة: {len(kept)}")
+class AskRequest(BaseModel):
+    q: str
+    k: int = 6
 
-        insight = learner.synthesize_insight(goal, kept)
-        if insight:
-            iid = learner.mem.store_insight(
-                topic=insight.topic,
-                summary=insight.summary,
-                confidence=insight.confidence,
-                sources=insight.sources,
-                created_at=insight.created_at.isoformat(timespec="seconds"),
-            )
-            print(f"[معرفة] Insight#{iid} (ثقة {insight.confidence:.2f})")
-            print(f"ملخص: {insight.summary[:300]} ...")
-            print(f"مصادر: {', '.join(insight.sources)}")
-            nxt = learner.reflect(goal, insight)
-            if nxt:
-                notes.append(nxt)
+def _now(): return dt.datetime.utcnow().isoformat(timespec="seconds") + "Z"
 
-    print("\nانتهى. كل ما جُمِع مُخزَّن في SQLite ضمن autolearn.db (docs/chunks/insights).")
+def learn_once():
+    topics = [t.strip() for t in DEFAULT_TOPICS if t.strip()]
+    for topic in topics:
+        for q in (f"أحدث الأخبار عن {topic}", f"شرح {topic} للمبتدئين"):
+            results = web_search(q, max_results=5)
+            for r in results:
+                url, title = r["href"], r["title"]
+                if mem.doc_exists(url): 
+                    continue
+                text = fetch_and_clean(url)
+                if not text or len(text) < 400:
+                    continue
+                doc_id = mem.add_doc(url=url, title=title, text=text, source="web", lang=LANG)
+                learner.process_doc(doc_id, text)
 
-if __name__ == "__main__":
-    main()
+class LoopThread(threading.Thread):
+    daemon = True
+    def run(self):
+        while True:
+            try:
+                learn_once()
+            except Exception as e:
+                print("[learn-loop] error:", e)
+            time.sleep(UPDATE_INTERVAL * 60)
+
+@app.on_event("startup")
+def _startup():
+    mem.init()
+    if AUTONOMOUS:
+        LoopThread().start()
+
+@app.get("/health")
+def health():
+    return {"ok": True, "time": _now()}
+
+@app.get("/learn/status")
+def learn_status():
+    s = mem.stats()
+    s["interval_minutes"] = UPDATE_INTERVAL
+    s["autonomous"] = AUTONOMOUS
+    return s
+
+@app.get("/search")
+def search_api(q: str = Query(..., description="عبارة البحث"), n: int = 5):
+    return web_search(q, max_results=n)
+
+@app.post("/chat")
+def chat(req: AskRequest):
+    hits = mem.search_chunks(req.q, top_k=req.k)
+    answer = learner.answer_from_chunks(req.q, hits)
+    return {"question": req.q, "answer": answer, "hits": hits}
