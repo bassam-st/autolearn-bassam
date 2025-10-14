@@ -1,7 +1,5 @@
 services:
-  # ==========================
-  # 🌐 واجهة المتابعة (Dashboard)
-  # ==========================
+  # لوحة المتابعة
   - type: web
     name: autolearn-dashboard
     env: python
@@ -20,13 +18,11 @@ services:
         mountPath: /data
         sizeGB: 2
 
-  # ==========================
-  # 🧠 نواة الذكاء (Core)
-  # ==========================
+  # نواة الذكاء (API + التعلم الذاتي الخلفي)
   - type: worker
     name: autolearn-core
     env: python
-    plan: starter   # لتعمل 24/7، يمكنك تغييرها إلى free مؤقتًا
+    plan: starter
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
@@ -46,7 +42,7 @@ services:
         value: true
       - key: UPDATE_INTERVAL
         value: 5
-      # المفاتيح الاختيارية (أزل التعليق عنها إن أردت التفعيل)
+      # مفاتيح اختيارية
       # - key: OPENAI_API_KEY
       #   sync: false
       # - key: GEMINI_API_KEY
@@ -56,9 +52,7 @@ services:
         mountPath: /data
         sizeGB: 2
 
-  # ==========================
-  # 📰 وحدة جلب الأخبار والمعرفة (News Worker)
-  # ==========================
+  # عامل الأخبار/المعرفة
   - type: worker
     name: autolearn-news
     env: python
