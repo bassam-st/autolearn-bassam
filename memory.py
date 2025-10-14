@@ -5,7 +5,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 class Memory:
     def __init__(self, db_path: str = "autolearn.db"):
-        self.db_path = db_path
+        import os
+self.db_path = db_path or os.getenv("AUTOLEARN_DB", "/data/autolearn.db")
 
     def init(self):
         con = sqlite3.connect(self.db_path); cur = con.cursor()
