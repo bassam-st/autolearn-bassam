@@ -77,3 +77,39 @@ safety:
   blocked_domains: ["x.com","tiktok.com","facebook.com"]
   respect_robots_txt: true
   max_page_bytes: 2000000
+  language: ar
+update_interval_min: 10   # غيّرها 10 إذا تبغى كل 10 دقائق
+
+learning_keywords:
+  - الذكاء الاصطناعي
+  - تعلم الآلة
+  - الشبكات
+  - الاتصالات
+  - بايثون
+  - هندسة برمجيات
+
+rss_feeds:
+  - https://www.theverge.com/rss/index.xml
+  - https://feeds.arstechnica.com/arstechnica/technology-lab
+  - https://hnrss.org/frontpage
+
+arxiv_queries:
+  - cat:cs.AI
+  - cat:cs.LG
+  - cat:cs.CL
+
+trusted_domains:
+  - wikipedia.org
+  - arxiv.org
+  - theverge.com
+  - arstechnica.com
+  - acm.org
+  - ieee.org
+
+blocked_domains:
+  - x.com
+  - tiktok.com
+  - facebook.com
+
+# مجلد محلي لملفاتك (PDF/TXT/MD) تُرفع يدوياً أو تُنشأ بالشل:
+personal_files_dir: /data/inbox
