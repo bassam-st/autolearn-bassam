@@ -1,4 +1,7 @@
 services:
+  # ==========================
+  # 🌐 واجهة المتابعة (Dashboard)
+  # ==========================
   - type: web
     name: autolearn-dashboard
     env: python
@@ -17,12 +20,17 @@ services:
         mountPath: /data
         sizeGB: 2
 
+  # ==========================
+  # 🧠 نواة الذكاء (Core)
+  # ==========================
   - type: worker
     name: autolearn-core
     env: python
-    plan: starter   # ليعمل 24/7؛ يمكن تغييرها إلى free مؤقتًا
-    buildCommand: pip install -r requirements.txt
-    startCommand: python autolearn.py
+    plan: starter   # لتعمل 24/7، يمكنك تغييرها إلى free مؤقتًا
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: uvicorn autolearn:app --host 0.0.0.0 --port 10000
     envVars:
       - key: AUTOLEARN_DB
         value: /data/autolearn.db
@@ -30,6 +38,15 @@ services:
         value: /data/hf_cache
       - key: SENTENCE_TRANSFORMERS_HOME
         value: /data/st_cache
+      - key: LANGUAGE
+        value: ar
+      - key: LOG_LEVEL
+        value: info
+      - key: AUTONOMOUS_MODE
+        value: true
+      - key: UPDATE_INTERVAL
+        value: 5
+      # المفاتيح الاختيارية (أزل التعليق عنها إن أردت التفعيل)
       # - key: OPENAI_API_KEY
       #   sync: false
       # - key: GEMINI_API_KEY
@@ -39,15 +56,24 @@ services:
         mountPath: /data
         sizeGB: 2
 
+  # ==========================
+  # 📰 وحدة جلب الأخبار والمعرفة (News Worker)
+  # ==========================
   - type: worker
     name: autolearn-news
     env: python
     plan: starter
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
     startCommand: python news_worker.py
     envVars:
       - key: AUTOLEARN_DB
         value: /data/autolearn.db
+      - key: LANGUAGE
+        value: ar
+      - key: UPDATE_INTERVAL
+        value: 60
     disks:
       - name: data
         mountPath: /data
