@@ -1,58 +1,55 @@
-from fastapi import FastAPI, Body
-from fastapi.responses import JSONResponse, HTMLResponse
-import os, sqlite3, math, time
-from qa import answer_question
+# -*- coding: utf-8 -*-
+import os, sqlite3, json, datetime as dt
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse, JSONResponse
 
-app = FastAPI(title="AutoLearn Dashboard")
+DB = os.getenv("AUTOLEARN_DB", "autolearn.db")
+app = FastAPI(title="AutoLearn Dashboard", version="1.0")
 
-DB_PATH = os.getenv("AUTOLEARN_DB", "autolearn.db")
-
-@app.get("/")
-def home():
-    # نفس بطاقات الإحصاء الموجودة عندك (اختصرنا هنا)
-    ok = os.path.exists(DB_PATH)
-    size_mb = round(os.path.getsize(DB_PATH)/(1024*1024),2) if ok else 0.0
-    con = sqlite3.connect(DB_PATH) if ok else None
-    def _count(t):
-        if not ok: return 0
-        try:
-            return con.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+def _stats():
+    if not os.path.exists(DB):
+        return {"db_exists": False, "size_mb": 0, "docs": 0, "chunks": 0, "insights": 0}
+    size_mb = os.path.getsize(DB) / (1024*1024)
+    con = sqlite3.connect(DB); cur = con.cursor()
+    def cnt(t):
+        try: return cur.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
         except: return 0
-    docs = _count("docs"); chunks = _count("chunks"); ins = _count("insights")
-    if con: con.close()
-    return {"db_exists": ok, "db": DB_PATH, "size_mb": size_mb,
-            "docs": docs, "chunks": chunks, "insights": ins, "updated": int(time.time())}
+    data = {"db_exists": True, "size_mb": round(size_mb, 3),
+            "docs": cnt("docs"), "chunks": cnt("chunks"), "insights": cnt("insights"),
+            "updated_at": dt.datetime.utcnow().isoformat()+"Z"}
+    con.close()
+    return data
 
-# ========= واجهة الأسئلة =========
-@app.post("/ask")
-def ask_api(payload: dict = Body(...)):
-    q = (payload.get("q") or "").strip()
-    if not q:
-        return JSONResponse({"error":"سؤال فارغ"}, status_code=400)
-    return answer_question(q)
+@app.get("/metrics")
+def metrics(): return JSONResponse(_stats())
 
-@app.get("/chat", response_class=HTMLResponse)
-def chat_page():
-    return """
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return f"""
 <!doctype html><meta charset="utf-8">
-<title>AutoLearn Chat</title>
-<style>body{font-family:sans-serif;background:#0a1020;color:#e8ecff;margin:20px}
-#log{white-space:pre-wrap;border:1px solid #334;padding:12px;border-radius:12px;min-height:220px}
-input,button{padding:10px;border-radius:10px;border:1px solid #334;background:#111a33;color:#fff}
-a{color:#9cf}</style>
-<h2>الدردشة مع AutoLearn</h2>
-<div id="log">اكتب سؤالك…</div><br/>
-<input id="q" placeholder="مثال: آخر أخبار الذكاء الاصطناعي" size="60"/>
-<button onclick="ask()">إرسال</button>
+<title>AutoLearn Dashboard</title>
+<style>
+body{{background:#0b1220;color:#e9edf5;font-family:system-ui,Segoe UI,Arial}}
+.card{{background:#121a2b;padding:18px;margin:14px;border-radius:14px}}
+h1{{margin:16px}} .k{{color:#8ab4ff}} .v{{color:#fff}}
+.small{{opacity:.7;font-size:.9rem}}
+</style>
+<h1>لوحة AutoLearn</h1>
+<div class="card" id="s">تحميل stats...</div>
 <script>
-async function ask(){
- const q = document.getElementById('q').value.trim();
- if(!q){return}
- document.getElementById('log').textContent="⏳ جاري البحث والتفكير…";
- const r = await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q})});
- const j = await r.json();
- const src = (j.sources||[]).map(u=>`• <a href="${u}" target="_blank">${u}</a>`).join("<br/>");
- document.getElementById('log').innerHTML = (j.answer||"") + "<br/><br/><b>المصادر:</b><br/>" + src;
-}
+async function load() {{
+  const r = await fetch('/metrics'); const s = await r.json();
+  let html = `<div class=small>يُحدّث تلقائيًا كل 60 ثانية</div>
+  <div class=card>
+  <div><span class=k>حالة القاعدة:</span> <span class=v>{'{'}{'}'} s.db_exists ? 'موجودة' : 'غير موجودة' {'{'}{'}'}</span></div>
+  <div><span class=k>الحجم (MB):</span> <span class=v>{'{'}{'}'} s.size_mb {'{'}{'}'}</span></div>
+  <div><span class=k>عدد المستندات:</span> <span class=v>{'{'}{'}'} s.docs {'{'}{'}'}</span></div>
+  <div><span class=k>عدد المقاطع:</span> <span class=v>{'{'}{'}'} s.chunks {'{'}{'}'}</span></div>
+  <div><span class=k>عدد المعارف:</span> <span class=v>{'{'}{'}'} s.insights {'{'}{'}'}</span></div>
+  <div class=small>آخر تحديث: { '{' }{ '{' } s.updated_at { '}' }{ '}' }</div>
+  </div>`;
+  document.getElementById('s').innerHTML = html;
+}}
+load(); setInterval(load, 60000);
 </script>
 """
